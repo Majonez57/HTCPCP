@@ -1,20 +1,17 @@
-import socket as soc
-from htcpcpMessage import HtcpcpRequest, HtcpcpResponse
+import socket
+import io
+from htcpcpmessage import HtcpcpResponse, HtcpcpRequest
 
-HOST = 'raspberrypi.local'
-PORT = 8000
+HOST = 'raspberrypi.local'  # The server's hostname or IP address
+PORT = 65432        # The port used by the server
 
-def Request(method, body = None):
-    with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s:
-        s.connect((HOST,PORT))
-        print("Creating request")
-        request = HtcpcpRequest()
-        request.method = method
-        request.setUri("English", HOST, pot = 0)
-        request.body = body
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect((HOST, PORT))
+    x = HtcpcpRequest()
+    x.setUri("English", "localhost", pot = 0)
+    x.method = "BREW"
+    s.sendall(bytes(x.create()))
+    data = HtcpcpResponse(io.StringIO(s.recv(1024)))
+    
 
-        response = HtcpcpResponse.fromFile(s.makefile())
-        s.sendall(bytes(request.create(), "utf-8"))
-        print(response.create())
-
-
+print('Received', repr(data))

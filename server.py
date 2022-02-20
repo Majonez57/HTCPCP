@@ -1,27 +1,23 @@
+import socket
 
-import socket as soc
-from urllib import response
+from htcpcpmessage import HtcpcpResponse, HtcpcpRequest
+import io
 
-from htcpcpMessage import HtcpcpRequest, HtcpcpResponse
+HOST = '0.0.0.0'  # Standard loopback interface address (localhost)
+PORT = 65432        # Port to listen on (non-privileged ports are > 1023)
 
-HOST = "0.0.0.0"
-PORT = 8000
-
-with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s: #Creates a socket object
-    s.bind((HOST,PORT))
-    s.listen() #Makes this socket a listener
-    conn, addr = s.accept() # Blocks and waits for an incoming connection
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen()
+    conn, addr = s.accept()
     with conn:
-        print("Connected by", addr)
+        print('Connected by', addr)
         while True:
-            try:
-                request = HtcpcpRequest.fromFile(conn.makefile())
-                print(request)
-                response = HtcpcpResponse()
-                response.status = 200
-                response.message = "OK"
-                
-                conn.sendall(bytes(request.create(), "utf-8"))
-            except soc.error:
-                print("An error occured")
-                break 
+            data = conn.recv(1024)
+            if not data:
+                break
+            print("Recieved: " + HtcpcpRequest(io.StringIO(data).create()))
+            a = HtcpcpResponse()
+            a.status = 200
+            a.message = "OK"
+            conn.sendall(a.create())

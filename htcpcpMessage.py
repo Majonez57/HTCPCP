@@ -111,14 +111,13 @@ class HtcpcpRequest():
     
     def create(self):
         if(not self._isValid()):
-            raise Exception("HTCPCP Request is invalid")
-        out = "{} {} HTCPCP/{}".format(self.method, self.uri, version)
+            raise Exception("HTCPCP Response is invalid")
+        out = "HTCPCP/{} {} {}\n".format(version, self.status, self.message)
         if(self.body):
             self.headers["content-length"] = len(self.body)
-        out += "".join(["\n{}: {}".format(key, value) for key, value in self.headers.items()]) + "\n"
+        out += "".join(["{}: {}\n".format(key, value) for key, value in self.headers.items()]) + "\n"
         if(self.body):
             out += "\n" + self.body
-
         return out
         
     def _setStartLine(self, firstLine : str):
