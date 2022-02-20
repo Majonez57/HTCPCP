@@ -11,9 +11,8 @@ with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s: #Creates a socket object
         print("Connected by", addr)
         while True:
             try:
-                data = conn.recv(1024)
-                if not data:
-                    break
+                data = s.makefile()
+                
                 print("Client Says: " + data.decode("utf-8"))
                 conn.sendall(b"Server says: Hi!")
             except soc.error:
