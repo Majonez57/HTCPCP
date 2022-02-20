@@ -4,8 +4,8 @@ from urllib import response
 
 from htcpcpMessage import HtcpcpRequest, HtcpcpResponse
 
-HOST = "127.0.0.1"
-PORT = 800
+HOST = "0.0.0.0"
+PORT = 8000
 
 with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s: #Creates a socket object
     s.bind((HOST,PORT))
@@ -15,7 +15,7 @@ with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s: #Creates a socket object
         print("Connected by", addr)
         while True:
             try:
-                request = HtcpcpRequest.fromFile(s.makefile)
+                request = HtcpcpRequest.fromFile(conn.makefile())
                 print(request)
                 response = HtcpcpResponse()
                 response.status = 200
