@@ -42,23 +42,32 @@ for key, values in coffeeSchemes.items():
 
 class HtcpcpResponse():
 
+    status = None
+    messsage = None
+    body = None
     headers = dict()
 
     def fromFile(raw_req : TextIO):
         x = HtcpcpResponse()
         x._setStartLine(raw_req.readline())
-        while ((header := raw_req.readline()) != ""):
+        while ((header := raw_req.readline()) not in ["", "\n"]):
             x._setHeader(header)
         
         contentLength = x.headers.get("content-length", 0)
-        x.body = raw_req.read(contentLength)
+        x.body = raw_req.read(int(contentLength))
 
         return x
     
     def create(self):
         if(not self._isValid()):
             raise Exception("HTCPCP Response is invalid")
-        
+        out = "HTCPCP/{} {} {}".format(version, self.status, self.message)
+        if(self.body):
+            self.headers["content-length"] = len(self.body)
+        out += "".join(["\n{}: {}".format(key, value) for key, value in self.headers.items()]) + "\n"
+        if(self.body):
+            out += "\n" + self.body
+        return out
 
     def toString():
         pass
@@ -66,17 +75,16 @@ class HtcpcpResponse():
     def _setStartLine(self, firstLine : str):
         flMatch = htcpcpResponseStartLineRegex.match(firstLine)
         matches = flMatch.groupdict()
-        self.method = matches["method"]
-        self.uri = matches["uri"]
-        self.version = matches["version"]
+        self.status = matches["status"]
+        self.message = matches["message"]
     
     def _setHeader(self, header : str):
         headerMatch = htcpcpHeaderRegex.match(header)
         matches = headerMatch.groupdict()
         self.headers[matches["key"].lower()] = matches["value"]
 
-    def _checkValid():
-        return true
+    def _isValid(self):
+        return self.status and self.message
 
 class HtcpcpRequest():
 
@@ -88,7 +96,6 @@ class HtcpcpRequest():
         x._setStartLine(raw_req.readline())
         while ((header := raw_req.readline()) not in ["", "\n"]):
             x._setHeader(header)
-        
         
         contentLength = x.headers.get("content-length", 0)
         x.body = raw_req.read(int(contentLength))
@@ -119,7 +126,6 @@ class HtcpcpRequest():
         matches = flMatch.groupdict()
         self.method = matches["method"]
         self.uri = matches["uri"]
-        self.version = matches["version"]
     
     def _setHeader(self, header : str):
         headerMatch = htcpcpHeaderRegex.match(header)
@@ -144,4 +150,19 @@ if __name__== "__main__":
     y = HtcpcpRequest.fromFile(io.StringIO(x.create()))
     print(y.create())
 
+    print("----------------------")
+    print("----------------------")
+
     a = HtcpcpResponse()
+    a.status = 200
+    a.message = "OK"
+    print(a.create())
+    print("----------------------")
+    b = HtcpcpResponse.fromFile(io.StringIO(a.create()))
+    print(b.create())
+    print("----------------------")
+    a.body = "No"
+    print(a.create())
+    print("----------------------")
+    b = HtcpcpResponse.fromFile(io.StringIO(a.create()))
+    print(b.create())
