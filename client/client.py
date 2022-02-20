@@ -1,14 +1,20 @@
 #!/usr/bin/env python3
 
 import socket as soc
+from protocol import htcpcpMessage
 
-HOST = '127.0.0.1'
-PORT = 800
+HOST = 'raspberrypi.local'
+PORT = 80
 
-with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s:
-    s.connect((HOST,PORT))
-    s.sendall(b'hello, world')
-    data = s.recv(1024)
-    
-print('recieved', repr(data))
+def Request(method, body = None):
+    with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s:
+        s.connect((HOST,PORT))
+        request = htcpcpMessage.HtcpcpRequest()
+        request.method = method
+        request.setUri("English", HOST, pot = 0)
+        request.body = body
+        s.sendall(bytes(request.create(), "utf-8"));
+        response = htcpcpMessage.HtcpcpResponse.fromFile(s.makefile())
+        print(response.create())
+
 

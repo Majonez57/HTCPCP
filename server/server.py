@@ -1,4 +1,7 @@
 import socket as soc
+from urllib import response
+
+from protocol.htcpcpMessage import HtcpcpRequest, HtcpcpResponse
 
 HOST = "127.0.0.1"
 PORT = 800
@@ -11,10 +14,13 @@ with soc.socket(soc.AF_INET, soc.SOCK_STREAM) as s: #Creates a socket object
         print("Connected by", addr)
         while True:
             try:
-                data = s.makefile()
+                request = HtcpcpRequest.fromFile(s.makefile)
+                print(request)
+                response = HtcpcpResponse()
+                response.status = 200
+                response.message = "OK"
                 
-                print("Client Says: " + data.decode("utf-8"))
-                conn.sendall(b"Server says: Hi!")
+                conn.sendall(bytes(request.create(), "utf-8"))
             except soc.error:
                 print("An error occured")
                 break 
