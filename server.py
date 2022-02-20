@@ -1,7 +1,8 @@
+
 import socket as soc
 from urllib import response
 
-from protocol.htcpcpMessage import HtcpcpRequest, HtcpcpResponse
+from htcpcpMessage import HtcpcpRequest, HtcpcpResponse
 
 HOST = "127.0.0.1"
 PORT = 800
